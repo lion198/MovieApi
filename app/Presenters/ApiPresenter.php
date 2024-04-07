@@ -20,10 +20,10 @@ final class ApiPresenter extends Nette\Application\UI\Presenter
         $request = $this->getHttpRequest();
         switch ($request->getMethod()) {
             case IRequest::Get:
-                $this->getMovieList($request);
+                $this->getMovieList();
                 break;
             case IRequest::Post:
-                $this->addMovie($request);
+                $this->addMovie();
                 break;
             default:
                 $this->error('Bad Request', 400);
@@ -51,6 +51,28 @@ final class ApiPresenter extends Nette\Application\UI\Presenter
     private function getMovieList(): void
     {
         $movies = $this->database->table('movie')->fetchAll();
+        $data = json_decode($this->getHttpRequest()->getRawBody(), true);
+        $filter = $data['filter'] ?? '';
+        $limit = $data['limit'] ?? 0;
+
+        $offset = $data['offset'] ?? 0;
+        $where = [];
+        if ($filter) {
+            $where[] = ['title LIKE ?', "%$filter%"];
+        }
+
+        if ($limit && $offset) {
+            $movies = $this->database->table('movie')
+                ->where($where)
+                ->order('title ' . 'ASC')
+                ->limit($limit, $offset)
+                ->fetchAll();
+        } else {
+            $this->database->table('movie')
+                ->where($where)
+                ->order('title ASC')
+                ->fetchAll();
+        }
         $data = array_map(function ($movie) {
             return [
                 'id' => $movie->id,
