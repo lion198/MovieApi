@@ -147,6 +147,8 @@ final class ApiPresenter extends Nette\Application\UI\Presenter
         $data = [
             'id' => $movie->id,
             'title' => $movie->title,
+            'genre_id' => $movie->genre_id,
+            'director_id' => $movie->director_id,
             'description' => $movie->description,
         ];
 
