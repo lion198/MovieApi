@@ -15,6 +15,21 @@ final class ApiPresenter extends Nette\Application\UI\Presenter
     {
     }
 
+    const AUTH_TOKEN = '$2y$10$xXWpmyNxGSG.JmBGsW3F2.7BiSz8UHa06mCVym5mPDp2qKMB.obD.';
+
+    public function startup()
+    {
+        parent::startup();
+        $token = $this->getHttpRequest()->getHeader('Authorization');
+        if (!$token) {
+            $this->error('Need Authorization token', 403);
+        }
+        /* password_hash('token') bcrypt Token*/
+        if (!password_verify($token, self::AUTH_TOKEN)) {
+            $this->error('Bad token', 403);
+        }
+    }
+
     public function actionMovies()
     {
         $request = $this->getHttpRequest();
@@ -57,9 +72,9 @@ final class ApiPresenter extends Nette\Application\UI\Presenter
 
         $offset = $data['offset'] ?? 0;
         $where = [];
-        if ($filter) {
-            $where[] = ['title LIKE ?', "%$filter%"];
-        }
+//        if ($filter) {
+//            $where[] = ['title LIKE ?', "%{$this->database->getConnection()->quote($filter)}%"];
+//        }
 
         if ($limit && $offset) {
             $movies = $this->database->table('movie')
