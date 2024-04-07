@@ -9,8 +9,8 @@ application:
 
 
 database:
-	dsn: 'sqlite::memory:'
-	user:
+	dsn: 'mysql:host=127.0.0.1;dbname=sledovanitv'
+	user: root
 	password:
 
 
