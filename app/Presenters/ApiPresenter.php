@@ -15,6 +15,7 @@ final class ApiPresenter extends Nette\Application\UI\Presenter
     ) {
         parent::__construct();
     }
+    // token was created by password_hash('token') alg =bcrypt,text = token*/
 
     const AUTH_TOKEN = '$2y$10$xXWpmyNxGSG.JmBGsW3F2.7BiSz8UHa06mCVym5mPDp2qKMB.obD.';
 
@@ -25,7 +26,6 @@ final class ApiPresenter extends Nette\Application\UI\Presenter
         if (!$token) {
             $this->sendMsgStatus('Need Authorization token', 403);
         }
-        /* password_hash('token') bcrypt Token*/
         if (!password_verify($token, self::AUTH_TOKEN)) {
             $this->sendMsgStatus('Bad token', 403);
         }
@@ -64,6 +64,14 @@ final class ApiPresenter extends Nette\Application\UI\Presenter
         }
     }
 
+    /**
+     * json body = {
+     * "limit" : int optional ,
+     * "offset" : int optional,
+     * "filter"  : String optional }
+     * response list of Movie. Movie has:ID,title
+     * @return void
+     */
     private function getMovieList(): void
     {
         $data = json_decode($this->getHttpRequest()->getRawBody(), true);
@@ -97,6 +105,16 @@ final class ApiPresenter extends Nette\Application\UI\Presenter
         $this->sendResponse(new JsonResponse($data));
     }
 
+    /**
+     * json body = {
+     *     "title" : string required
+     *      "description" : string required
+     *      "genre_id" : int required
+     *      "director_id" : int required
+     * }
+     * response add movie
+     * @return void
+     */
     private function addMovie()
     {
         $data = json_decode($this->getHttpRequest()->getRawBody(), true);
@@ -112,6 +130,18 @@ final class ApiPresenter extends Nette\Application\UI\Presenter
         $this->sendJson($movie->getDataArray());
 
     }
+
+    /**
+     * @param string $id
+     * @return void
+     * json body = {
+     *      "title" : string required
+     *       "description" : string required
+     *       "genre_id" : int required
+     *       "director_id" : int required
+     *  }
+     *  response edit movie
+     */
 
     private function editMovie(string $id): void
     {
@@ -129,6 +159,17 @@ final class ApiPresenter extends Nette\Application\UI\Presenter
         $this->sendResponse(new JsonResponse($movie->getDataArray()));
 
     }
+    /**
+     * @param string $id
+     * @return void
+     * json body = {
+     *      "title" : string required
+     *       "description" : string required
+     *       "genre_id" : int required
+     *       "director_id" : int required
+     *  }
+     *  response movie
+     */
 
     private function detailMovie(string $id): void
     {
@@ -138,6 +179,11 @@ final class ApiPresenter extends Nette\Application\UI\Presenter
         }
         $this->sendJson($movie->getDataArray());
     }
+    /**
+     * @param string $id
+     * @return void
+     *  response message with deleted id of movie
+     */
 
     private function deleteMovie(int $id): void
     {
@@ -148,7 +194,7 @@ final class ApiPresenter extends Nette\Application\UI\Presenter
         $movie->delete();
         $this->sendMsgStatus('Movie with' . $id . ' deleted');
     }
-
+    /** For sending response status code and message  */
     #[NoReturn] public function sendMsgStatus(string $msg = 'OK', int $statusCode = 200): void
     {
         $this->getHttpResponse()->setCode($statusCode);
@@ -158,7 +204,7 @@ final class ApiPresenter extends Nette\Application\UI\Presenter
         $jsonResponse = new JsonResponse($response);
         $this->sendResponse($jsonResponse);
     }
-
+    /** Check if data set and valid */
     private function isDataValid($data): void
     {
         $dataToCompare = ['title', 'description', 'genre_id', 'director_id'];
