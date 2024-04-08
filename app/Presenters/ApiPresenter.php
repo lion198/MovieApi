@@ -67,29 +67,25 @@ final class ApiPresenter extends Nette\Application\UI\Presenter
 
     private function getMovieList(): void
     {
-        $movies = $this->database->table('movie')->fetchAll();
         $data = json_decode($this->getHttpRequest()->getRawBody(), true);
-//        $filter = $data['filter'] ?? '';
-        $limit = $data['limit'] ?? 0;
-
-        $offset = $data['offset'] ?? 0;
+        $filter = $data['filter'] ?? '';
+        $limit = isset($data['limit']) ? (int)$data['limit'] : 0;
+        $offset = isset($data['offset']) ? (int)$data['offset'] : 0;
         $where = [];
-//        if ($filter) {
-//            $where[] = ['title LIKE ?', "%{$this->database->getConnection()->quote($filter)}%"];
-//        }
 
-        if ($limit && $offset) {
-            $movies = $this->database->table('movie')
-//                ->where($where)
-                ->order('title ' . 'ASC')
-                ->limit($limit, $offset)
-                ->fetchAll();
-        } else {
-            $this->database->table('movie')
-//                ->where($where)
-                ->order('title ASC')
-                ->fetchAll();
+        if ($filter) {
+            $where['title LIKE ?'] = "%$filter%";
         }
+        $query = $this->database->table('movie')->where($where)->order('title ASC');
+
+        if ($limit > 0) {
+            if ($offset > 0) {
+                $query->limit($limit, $offset);
+            } else {
+                $query->limit($limit);
+            }
+        }
+        $movies = $query->fetchAll();
         $data = array_map(function ($movie) {
             return [
                 'id' => $movie->id,
@@ -162,7 +158,7 @@ final class ApiPresenter extends Nette\Application\UI\Presenter
         $this->sendResponse($jsonResponse);
     }
 
-    private function isValidData($data) : void
+    private function isValidData($data): void
     {
         $dataToCompare = ['title', 'description', 'genre_id', 'director_id'];
         foreach ($dataToCompare as $item) {
