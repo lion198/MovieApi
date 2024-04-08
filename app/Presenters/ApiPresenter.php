@@ -7,14 +7,12 @@ use Movie;
 use Nette;
 use Nette\Application\Responses\JsonResponse;
 use Nette\Http\IRequest;
-use Nette\Http\Response;
 
 final class ApiPresenter extends Nette\Application\UI\Presenter
 {
     public function __construct(
         private Nette\Database\Explorer $database,
-    )
-    {
+    ) {
     }
 
     const AUTH_TOKEN = '$2y$10$xXWpmyNxGSG.JmBGsW3F2.7BiSz8UHa06mCVym5mPDp2qKMB.obD.';
@@ -24,11 +22,11 @@ final class ApiPresenter extends Nette\Application\UI\Presenter
         parent::startup();
         $token = $this->getHttpRequest()->getHeader('Authorization');
         if (!$token) {
-            $this->error('Need Authorization token', 403);
+            $this->sendMsgStatus('Need Authorization token', 403);
         }
         /* password_hash('token') bcrypt Token*/
         if (!password_verify($token, self::AUTH_TOKEN)) {
-            $this->error('Bad token', 403);
+            $this->sendMsgStatus('Bad token', 403);
         }
     }
 
@@ -36,14 +34,14 @@ final class ApiPresenter extends Nette\Application\UI\Presenter
     {
         $request = $this->getHttpRequest();
         switch ($request->getMethod()) {
-            case IRequest::Get:
-                $this->getMovieList();
-                break;
-            case IRequest::Post:
-                $this->addMovie();
-                break;
-            default:
-                $this->error('Bad Request', 400);
+        case IRequest::Get:
+            $this->getMovieList();
+            break;
+        case IRequest::Post:
+            $this->addMovie();
+            break;
+        default:
+            $this->error('Bad Request', 400);
         }
     }
 
@@ -51,17 +49,17 @@ final class ApiPresenter extends Nette\Application\UI\Presenter
     {
         $request = $this->getHttpRequest();
         switch ($request->getMethod()) {
-            case IRequest::Get:
-                $this->detailMovie($id);
-                break;
-            case IRequest::Put:
-                $this->editMovie($id);
-                break;
-            case IRequest::Delete:
-                $this->deleteMovie($id);
-                break;
-            default:
-                $this->error('Bad Request', 400);
+        case IRequest::Get:
+            $this->detailMovie($id);
+            break;
+        case IRequest::Put:
+            $this->editMovie($id);
+            break;
+        case IRequest::Delete:
+            $this->deleteMovie($id);
+            break;
+        default:
+            $this->error('Bad Request', 400);
         }
     }
 
@@ -86,12 +84,14 @@ final class ApiPresenter extends Nette\Application\UI\Presenter
             }
         }
         $movies = $query->fetchAll();
-        $data = array_map(function ($movie) {
-            return [
+        $data = array_map(
+            function ($movie) {
+                return [
                 'id' => $movie->id,
                 'title' => $movie->title,
-            ];
-        }, $movies);
+                ];
+            }, $movies
+        );
 
         $this->sendResponse(new JsonResponse($data));
     }

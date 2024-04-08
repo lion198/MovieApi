@@ -22,7 +22,8 @@
 	},
 	"require-dev": {
 		"nette/tester": "^2.5",
-		"symfony/thanks": "^1"
+		"symfony/thanks": "^1",
+		"squizlabs/php_codesniffer": "^3.9"
 	},
 	"autoload": {
 		"psr-4": {
