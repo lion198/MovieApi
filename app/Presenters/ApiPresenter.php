@@ -11,8 +11,9 @@ use Nette\Http\IRequest;
 final class ApiPresenter extends Nette\Application\UI\Presenter
 {
     public function __construct(
-        private Nette\Database\Explorer $database,
+        private readonly Nette\Database\Explorer $database,
     ) {
+        parent::__construct();
     }
 
     const AUTH_TOKEN = '$2y$10$xXWpmyNxGSG.JmBGsW3F2.7BiSz8UHa06mCVym5mPDp2qKMB.obD.';
@@ -100,7 +101,7 @@ final class ApiPresenter extends Nette\Application\UI\Presenter
     {
         $data = json_decode($this->getHttpRequest()->getRawBody(), true);
 
-        $this->isValidData($data);
+        $this->isDataValid($data);
         $movie = new Movie($this->database);
         $movie->setTitle($data['title']);
         $movie->setDescription($data['description']);
@@ -119,7 +120,7 @@ final class ApiPresenter extends Nette\Application\UI\Presenter
             $this->sendMsgStatus('Movie not found', 404);
         }
         $data = json_decode($this->getHttpRequest()->getRawBody(), true);
-        $this->isValidData($data);
+        $this->isDataValid($data);
         $movie->setTitle($data['title']);
         $movie->setDescription($data['description']);
         $movie->setGenreId($data['genre_id']);
@@ -158,7 +159,7 @@ final class ApiPresenter extends Nette\Application\UI\Presenter
         $this->sendResponse($jsonResponse);
     }
 
-    private function isValidData($data): void
+    private function isDataValid($data): void
     {
         $dataToCompare = ['title', 'description', 'genre_id', 'director_id'];
         foreach ($dataToCompare as $item) {
